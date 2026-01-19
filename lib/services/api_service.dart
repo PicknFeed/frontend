@@ -5,7 +5,6 @@ import 'api_service.dart';
 class LoginResult {
   final String token;
   final String role;
-
   LoginResult({required this.token, required this.role});
 }
 
@@ -13,7 +12,7 @@ class AuthService {
   Future<LoginResult?> login(String email, String password) async {
     final response = await http
         .post(
-          Uri.parse('${ApiService.baseUrl}/api/auth/login'),
+          Uri.parse('${ApiService.baseUrl}/auth/login'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'email': email.trim(),
@@ -26,13 +25,13 @@ class AuthService {
       final data = jsonDecode(response.body);
 
       final token = (data['token'] ?? data['accessToken'])?.toString();
-      final role = (data['role'] ?? '').toString();
+      final role = (data['user']?['role'] ?? '').toString(); // ✅ 백엔드 구조
 
       if (token == null || token.isEmpty) return null;
 
       return LoginResult(
         token: token,
-        role: role.isEmpty ? 'PERSONAL' : role,
+        role: role.isEmpty ? 'user' : role,
       );
     }
 
