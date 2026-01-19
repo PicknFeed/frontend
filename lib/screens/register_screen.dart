@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:minix_flutter/services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   final String role; // PERSONAL | COMPANY
@@ -17,6 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
 
   final Color mainRed = const Color(0xFFE53935);
   final Color borderGray = const Color(0xFFDDDDDD);
@@ -26,6 +28,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.initState();
     // 🔥 LoginScreen에서 넘어온 role 반영
     userType = widget.role == 'PERSONAL' ? 'personal' : 'company';
+  }
+
+  Future<void> _handleRegister() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+    final name = nameController.text.trim();
+
+    if (email.isEmpty || password.isEmpty || name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('모든 정보를 입력해주세요')),
+      );
+      return;
+    }
+
+    final success = await AuthService().register(
+      email: email,
+      password: password,
+      name: name,
+      role: userType.toUpperCase(),
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('회원가입 성공! 로그인 해주세요.')),
+      );
+      Navigator.pop(context); // 로그인 화면으로 복귀
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('회원가입 실패. 이메일을 확인해주세요.')),
+      );
+    }
   }
 
   @override
@@ -72,6 +107,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             const SizedBox(height: 16),
 
+            /// 이름
+             TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                hintText: '이름',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
             /// 이메일
             TextField(
               controller: emailController,
@@ -104,20 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 48),
               ),
-              onPressed: () {
-                // TODO: 실제 회원가입 API 연동 예정
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      userType == 'personal'
-                          ? '개인 회원가입 완료'
-                          : '기업 회원가입 완료',
-                    ),
-                  ),
-                );
-
-                Navigator.pop(context); // 로그인 화면으로 복귀
-              },
+              onPressed: _handleRegister,
               child: const Text('회원가입 완료'),
             ),
           ],
