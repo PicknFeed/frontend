@@ -13,7 +13,7 @@ class AuthService {
   Future<LoginResult?> login(String email, String password) async {
     final response = await http
         .post(
-          Uri.parse('${ApiService.baseUrl}/api/auth/login'),
+          Uri.parse('${ApiService.baseUrl}/auth/login'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'email': email.trim(),
@@ -26,16 +26,38 @@ class AuthService {
       final data = jsonDecode(response.body);
 
       final token = (data['token'] ?? data['accessToken'])?.toString();
-      final role = (data['role'] ?? '').toString();
+      final role = (data['user']?['role'] ?? data['role'])?.toString(); // user.role 체크
 
       if (token == null || token.isEmpty) return null;
 
       return LoginResult(
         token: token,
-        role: role.isEmpty ? 'PERSONAL' : role,
+        role: (role == null || role.isEmpty) ? 'PERSONAL' : role,
       );
     }
 
     return null;
+  }
+
+  Future<bool> register({
+    required String email,
+    required String password,
+    required String name,
+    required String role,
+  }) async {
+    final response = await http
+        .post(
+          Uri.parse('${ApiService.baseUrl}/auth/register'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'email': email.trim(),
+            'password': password,
+            'name': name.trim(),
+            'role': role,
+          }),
+        )
+        .timeout(const Duration(seconds: 8));
+
+    return response.statusCode >= 200 && response.statusCode < 300;
   }
 }
