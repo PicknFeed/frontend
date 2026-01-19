@@ -6,6 +6,10 @@ import '../services/api_service.dart';
 import 'my_request_screen.dart';
 import 'evaluation_result_screen.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+import '../models/resume_file.dart';
+import 'resume_upload_screen.dart';
+
 class MyPageScreen extends StatefulWidget {
   final String role; // 'PERSONAL' / 'COMPANY'
   const MyPageScreen({super.key, required this.role});
@@ -17,15 +21,26 @@ class MyPageScreen extends StatefulWidget {
 class _MyPageScreenState extends State<MyPageScreen> {
   late Future<MeResponse?> _future;
 
+  // ✅ 추가: 이력서 목록 Future
+  late Future<List<ResumeFile>> _resumesFuture;
+
   @override
   void initState() {
     super.initState();
     _future = ApiService.fetchMe();
+    _resumesFuture = ApiService.fetchMyResumes(); // ✅ 추가
   }
 
   void _reload() {
     setState(() {
       _future = ApiService.fetchMe();
+    });
+  }
+
+  // ✅ 추가: 이력서 목록만 새로고침
+  void _reloadResumes() {
+    setState(() {
+      _resumesFuture = ApiService.fetchMyResumes();
     });
   }
 
@@ -123,7 +138,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: '새로고침',
-            onPressed: _reload,
+            onPressed: () {
+              _reload();
+              _reloadResumes(); // ✅ 추가(이력서도 같이 새로고침)
+            },
           ),
         ],
       ),
@@ -236,6 +254,81 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     },
                     icon: const Icon(Icons.rate_review),
                     label: const Text('내 평가 피드백'),
+                  ),
+                ),
+
+                // ✅ (3) 아래에 붙이기: 업로드 버튼 + 업로드 목록
+                const SizedBox(height: 10),
+
+                // ✅ 이력서 업로드하기
+                SizedBox(
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final changed = await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ResumeUploadScreen()),
+                      );
+                      if (changed == true) _reloadResumes();
+                    },
+                    icon: const Icon(Icons.upload_file),
+                    label: const Text('이력서 업로드하기 (PDF)'),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // ✅ 내 이력서 모아보기
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '내 이력서 파일',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 10),
+                        FutureBuilder<List<ResumeFile>>(
+                          future: _resumesFuture,
+                          builder: (context, snap) {
+                            if (snap.connectionState == ConnectionState.waiting) {
+                              return const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Center(child: CircularProgressIndicator()),
+                              );
+                            }
+
+                            final list = snap.data ?? [];
+                            if (list.isEmpty) {
+                              return const Text('업로드한 이력서가 없습니다.');
+                            }
+
+                            return Column(
+                              children: list.map((r) {
+                                return ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const Icon(Icons.picture_as_pdf),
+                                  title: Text(r.originalName),
+                                  subtitle: Text(r.createdAt),
+                                  trailing: const Icon(Icons.open_in_new),
+                                  onTap: () async {
+                                    // 백엔드에서 url은 "/uploads/xxx.pdf" 형태
+                                    final full = '${ApiService.host}${r.url}';
+                                    final uri = Uri.parse(full);
+                                    await launchUrl(
+                                      uri,
+                                      mode: LaunchMode.externalApplication,
+                                    );
+                                  },
+                                );
+                              }).toList(),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ] else ...[
