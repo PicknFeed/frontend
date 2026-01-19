@@ -6,6 +6,7 @@ import 'package:minix_flutter/models/matching.dart';
 import 'package:minix_flutter/models/evaluation.dart';
 import 'package:minix_flutter/models/request_item.dart';
 import 'package:minix_flutter/utils/token_storage.dart';
+import 'package:minix_flutter/models/me_response.dart';
 
 class ApiService {
   // Windows 노트북 IPv4
@@ -24,6 +25,19 @@ class ApiService {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
+  }
+
+  // 마이페이지용: 내 정보 + 프로필 조회
+  static Future<MeResponse?> fetchMe() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/users/me'),
+      headers: await _headers(),
+    );
+
+    if (res.statusCode != 200) return null;
+
+    final data = jsonDecode(res.body) as Map<String, dynamic>;
+    return MeResponse.fromJson(data);
   }
 
   // 연결 확인용: iPhone Safari로도 접속 테스트 가능

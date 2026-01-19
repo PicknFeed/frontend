@@ -9,6 +9,8 @@ import 'package:minix_flutter/screens/company_matching_screen.dart';
 import 'package:minix_flutter/screens/my_request_screen.dart';
 import 'package:minix_flutter/screens/login_screen.dart';
 import 'package:minix_flutter/utils/token_storage.dart';
+import 'package:minix_flutter/screens/my_page_screen.dart';
+
 
 class HomeScreen extends StatelessWidget {
   /// PERSONAL / COMPANY
@@ -62,7 +64,7 @@ class HomeScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (_) =>
-                  isPersonal ? PersonalProfileForm() : CompanyProfileForm(),
+                  MyPageScreen(role: role),
                 ),
               );
             },
