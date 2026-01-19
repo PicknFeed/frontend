@@ -9,7 +9,7 @@ import 'package:minix_flutter/utils/token_storage.dart';
 
 class ApiService {
   // Windows 노트북 IPv4
-  static const String pcIp = '192.168.0.31';
+  static const String pcIp = '192.168.0.32';
 
   // iPhone에서 접근할 백엔드 주소
   static const String host = 'http://$pcIp:3000';

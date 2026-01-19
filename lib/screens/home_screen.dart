@@ -62,14 +62,14 @@ class HomeScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (_) =>
-                      isPersonal ? PersonalProfileForm() : CompanyProfileForm(),
+                  isPersonal ? PersonalProfileForm() : CompanyProfileForm(),
                 ),
               );
             },
-            child: const Text(
-              '프로필',
-              style: TextStyle(color: Colors.white),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white, // 텍스트 색
             ),
+            child: const Text('프로필'),
           ),
 
           /// 로그아웃
