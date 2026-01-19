@@ -120,7 +120,7 @@ class _CompanyMatchingScreenState extends State<CompanyMatchingScreen> {
                             ),
                           ],
                         ),
-                      ] else if (m.status == 'ACCEPT') ...[
+                      ] else if (m.status == 'APPROVED') ...[
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
