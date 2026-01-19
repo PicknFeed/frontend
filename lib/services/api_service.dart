@@ -7,6 +7,8 @@ import 'package:minix_flutter/models/evaluation.dart';
 import 'package:minix_flutter/models/request_item.dart';
 import 'package:minix_flutter/utils/token_storage.dart';
 import 'package:minix_flutter/models/me_response.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:minix_flutter/models/resume_file.dart';
 
 class ApiService {
   // Windows 노트북 IPv4
@@ -38,6 +40,51 @@ class ApiService {
 
     final data = jsonDecode(res.body) as Map<String, dynamic>;
     return MeResponse.fromJson(data);
+  }
+
+  // ✅ 내 이력서 목록 조회
+  static Future<List<ResumeFile>> fetchMyResumes() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/resumes/me'),
+      headers: await _headers(),
+    );
+
+    if (res.statusCode != 200) return [];
+    final List data = jsonDecode(res.body);
+    return data.map((e) => ResumeFile.fromJson(e)).toList();
+  }
+
+  // ✅ 이력서 업로드 (PDF)
+  static Future<bool> uploadResume(PlatformFile file) async {
+    final token = await TokenStorage.getToken();
+    final uri = Uri.parse('$baseUrl/resumes');
+
+    final req = http.MultipartRequest('POST', uri);
+    if (token != null) req.headers['Authorization'] = 'Bearer $token';
+
+    // 웹은 bytes로 오는 경우가 많음
+    if (file.bytes != null) {
+      req.files.add(
+        http.MultipartFile.fromBytes(
+          'file',
+          file.bytes!,
+          filename: file.name,
+        ),
+      );
+    } else if (file.path != null) {
+      req.files.add(
+        await http.MultipartFile.fromPath(
+          'file',
+          file.path!,
+          filename: file.name,
+        ),
+      );
+    } else {
+      return false;
+    }
+
+    final streamed = await req.send();
+    return streamed.statusCode == 200 || streamed.statusCode == 201;
   }
 
   // 연결 확인용: iPhone Safari로도 접속 테스트 가능
@@ -178,4 +225,5 @@ class ApiService {
     final List data = jsonDecode(res.body);
     return data.map((e) => Evaluation.fromJson(e)).toList();
   }
+  
 }
