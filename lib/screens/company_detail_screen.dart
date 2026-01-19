@@ -16,6 +16,7 @@ class CompanyDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            /// 채용 포지션
             Text(
               company.position,
               style: const TextStyle(
@@ -23,8 +24,23 @@ class CompanyDetailScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
+            /// 회사 소개
+            const Text(
+              '회사 소개',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              company.description.isEmpty
+                  ? '회사 소개 정보가 없습니다.'
+                  : company.description,
+              style: const TextStyle(height: 1.4),
+            ),
+            const SizedBox(height: 20),
+
+            /// 기술 스택
             const Text(
               '기술 스택',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -33,14 +49,16 @@ class CompanyDetailScreen extends StatelessWidget {
 
             Wrap(
               spacing: 8,
-              children: company.skills
-                  .map((s) => Chip(label: Text(s)))
-                  .toList(),
+              children: company.skills.isEmpty
+                  ? [const Chip(label: Text('정보 없음'))]
+                  : company.skills
+                      .map((s) => Chip(label: Text(s)))
+                      .toList(),
             ),
 
             const Spacer(),
 
-            /// 매칭 요청 버튼 (⭐ 수정 포인트)
+            /// 매칭 요청 버튼
             SizedBox(
               width: double.infinity,
               height: 48,
