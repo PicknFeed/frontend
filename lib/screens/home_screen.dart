@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'package:minix_flutter/models/company.dart';
-// import 'package:minix_flutter/models/person.dart';
+import 'package:minix_flutter/models/company.dart';
+import 'package:minix_flutter/models/person.dart';
 import 'package:minix_flutter/screens/company_detail_screen.dart';
 import 'package:minix_flutter/screens/personal_profile_form.dart';
 import 'package:minix_flutter/screens/company_profile_form.dart';
@@ -8,7 +8,7 @@ import 'package:minix_flutter/services/api_service.dart';
 import 'package:minix_flutter/screens/company_matching_screen.dart';
 import 'package:minix_flutter/screens/my_request_screen.dart';
 import 'package:minix_flutter/screens/login_screen.dart';
-// import 'package:minix_flutter/utils/token_storage.dart';
+import 'package:minix_flutter/utils/token_storage.dart';
 
 class HomeScreen extends StatelessWidget {
   /// PERSONAL / COMPANY

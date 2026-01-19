@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/project.dart';
 import 'project_detail_screen.dart';
 
 class ProjectListScreen extends StatelessWidget {
