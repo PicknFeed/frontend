@@ -3,6 +3,7 @@ import 'package:minix_flutter/screens/register_screen.dart';
 import 'package:minix_flutter/screens/home_screen.dart';
 import 'package:minix_flutter/services/auth_service.dart';
 import 'package:minix_flutter/utils/token_storage.dart';
+import 'package:minix_flutter/services/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -61,7 +62,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                /// 사용자 유형 선택 (회원가입용)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
@@ -92,7 +92,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                /// 이메일
                 TextField(
                   controller: emailController,
                   decoration: InputDecoration(
@@ -106,7 +105,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                /// 비밀번호
                 TextField(
                   controller: passwordController,
                   obscureText: true,
@@ -121,7 +119,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                /// 로그인 버튼
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -145,8 +142,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         return;
                       }
 
+                      // ✅ (선택) baseUrl이 맞는지 1초 컷 체크
+                      final pingOk = await ApiService.ping();
+                      if (!pingOk) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '서버 연결 실패: ${ApiService.baseUrl}',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+
                       final result = await AuthService().login(
-                        emailController.text,
+                        emailController.text.trim(),
                         passwordController.text,
                       );
 
@@ -177,7 +187,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                /// 회원가입 버튼 (⭐ 수정 핵심)
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -193,8 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              RegisterScreen(role: selectedRole),
+                          builder: (_) => RegisterScreen(role: selectedRole),
                         ),
                       );
                     },

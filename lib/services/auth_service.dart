@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'api_service.dart';
 
 class LoginResult {
   final String token;
@@ -9,23 +10,29 @@ class LoginResult {
 }
 
 class AuthService {
-  static const String baseUrl = 'http://localhost:3000';
-
   Future<LoginResult?> login(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-      }),
-    );
+    final response = await http
+        .post(
+          Uri.parse('${ApiService.baseUrl}/api/auth/login'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'email': email.trim(),
+            'password': password,
+          }),
+        )
+        .timeout(const Duration(seconds: 8));
 
-    if (response.statusCode == 200) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
       final data = jsonDecode(response.body);
+
+      final token = (data['token'] ?? data['accessToken'])?.toString();
+      final role = (data['role'] ?? '').toString();
+
+      if (token == null || token.isEmpty) return null;
+
       return LoginResult(
-        token: data['token'],
-        role: data['role'], // PERSONAL / COMPANY
+        token: token,
+        role: role.isEmpty ? 'PERSONAL' : role,
       );
     }
 

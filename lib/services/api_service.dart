@@ -8,11 +8,16 @@ import 'package:minix_flutter/models/request_item.dart';
 import 'package:minix_flutter/utils/token_storage.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://서버주소:포트';
+  // Windows 노트북 IPv4
+  static const String pcIp = '192.168.0.31';
 
-  /* ===========================================================
-     공통 헤더 (JWT 자동 포함)
-  =========================================================== */
+  // iPhone에서 접근할 백엔드 주소
+  static const String host = 'http://$pcIp:3000';
+
+  // 백엔드는 /api prefix 사용
+  static const String baseUrl = '$host/api';
+
+
   static Future<Map<String, String>> _headers() async {
     final token = await TokenStorage.getToken();
     return {
@@ -21,9 +26,24 @@ class ApiService {
     };
   }
 
-  /* ===========================================================
-     개인 → 기업 목록 조회
-  =========================================================== */
+  // 연결 확인용: iPhone Safari로도 접속 테스트 가능
+  // http://192.168.0.31:3000/api/ping
+  static Future<bool> ping() async {
+    try {
+      final res = await http
+          .get(
+            Uri.parse('$baseUrl/ping'),
+            headers: {'Content-Type': 'application/json'},
+          )
+          .timeout(const Duration(seconds: 5));
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // ------------------ 아래는 기존 API들 (/api 반영) ------------------
+
   static Future<List<Company>> fetchCompanies() async {
     final res = await http.get(
       Uri.parse('$baseUrl/companies'),
@@ -36,9 +56,7 @@ class ApiService {
     return data.map((e) => Company.fromJson(e)).toList();
   }
 
-  /* ===========================================================
-     기업 → 개인 목록 조회
-  =========================================================== */
+
   static Future<List<Person>> fetchPeople() async {
     final res = await http.get(
       Uri.parse('$baseUrl/people'),
@@ -51,9 +69,7 @@ class ApiService {
     return data.map((e) => Person.fromJson(e)).toList();
   }
 
-  /* ===========================================================
-     프로필 등록 / 수정 (개인 / 기업 공통)
-  =========================================================== */
+
   static Future<bool> saveProfile(Map<String, dynamic> profileData) async {
     final res = await http.post(
       Uri.parse('$baseUrl/profile'),
@@ -64,9 +80,7 @@ class ApiService {
     return res.statusCode == 200 || res.statusCode == 201;
   }
 
-  /* ===========================================================
-     개인 → 기업 매칭 요청
-  =========================================================== */
+
   static Future<bool> requestMatching(int companyId) async {
     final res = await http.post(
       Uri.parse('$baseUrl/personal/requests'),
@@ -77,9 +91,7 @@ class ApiService {
     return res.statusCode == 200 || res.statusCode == 201;
   }
 
-  /* ===========================================================
-     개인 → 내가 요청한 매칭 목록
-  =========================================================== */
+
   static Future<List<RequestItem>> fetchMyRequests() async {
     final res = await http.get(
       Uri.parse('$baseUrl/personal/requests'),
@@ -92,9 +104,7 @@ class ApiService {
     return data.map((e) => RequestItem.fromJson(e)).toList();
   }
 
-  /* ===========================================================
-     기업 → 받은 매칭 요청 목록
-  =========================================================== */
+
   static Future<List<Matching>> fetchCompanyMatchings() async {
     final res = await http.get(
       Uri.parse('$baseUrl/company/requests'),
@@ -107,9 +117,7 @@ class ApiService {
     return data.map((e) => Matching.fromJson(e)).toList();
   }
 
-  /* ===========================================================
-     기업 → 매칭 승인 / 거절
-  =========================================================== */
+
   static Future<bool> respondMatching({
     required int requestId,
     required bool accept,
@@ -125,9 +133,7 @@ class ApiService {
     return res.statusCode == 200;
   }
 
-  /* ===========================================================
-     기업 → 평가 등록
-  =========================================================== */
+
   static Future<bool> submitEvaluation({
     required int requestId,
     required int score,
@@ -146,9 +152,7 @@ class ApiService {
     return res.statusCode == 200 || res.statusCode == 201;
   }
 
-  /* ===========================================================
-     개인 → 내 평가 조회
-  =========================================================== */
+
   static Future<List<Evaluation>> fetchMyEvaluations() async {
     final res = await http.get(
       Uri.parse('$baseUrl/evaluation/me'),
